@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Objednávka jídla</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    body.dark {
+      --bg: #020617;
+      --card: #020617;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --text-light: #9ca3af;
+      --shadow: 0 4px 18px rgba(0,0,0,0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .page {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .toggle-btn span {
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtext {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin-bottom: 0.75rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.6rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: rgba(148, 163, 184, 0.12);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .menu-day {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    tr.draggable-row {
+      cursor: grab;
+    }
+
+    tr.drag-over {
+      outline: 2px dashed var(--primary);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      background: #f9fafb;
+      transition: 0.2s;
+      color: var(--text);
+    }
+
+    body.dark input,
+    body.dark select,
+    body.dark textarea {
+      background: #020617;
+      border-color: #1f2937;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    body.dark input:focus,
+    body.dark select:focus,
+    body.dark textarea:focus {
+      background: #020617;
+    }
+
+    input[type="number"] {
+      max-width: 80px;
+    }
+
+    .order-footer {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      display: block;
+      color: var(--text-light);
+    }
+
+    .actions {
+      margin-top: 1.3rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.7rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    body.dark .btn-secondary {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    body.dark .btn-secondary:hover {
+      background: #1f2937;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-light);
+    }
+
+    .btn-ghost.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <h1>Objednávka jídla</h1>
+      <div class="top-actions">
+        <button id="editToggle" class="btn-ghost">Režim úprav jídelníčku</button>
+        <button id="darkToggle" class="toggle-btn">
+          <span id="darkIcon">🌙</span>
+          <span id="darkLabel">Dark mode</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="layout">
+
+      <!-- JÍDELNÍ LÍSTEK -->
+      <section class="card">
+        <h2>Týdenní jídelní lístek</h2>
+        <p class="subtext">
+          Přepni „Režim úprav jídelníčku“ pro možnost přepsat jídla a přetahovat dny (drag & drop).
+        </p>
+        <table id="menuTable">
+          <thead>
+            <tr>
+              <th>Den</th>
+              <th>Polévka</th>
+              <th>Hlavní jídlo</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="actions" style="justify-content:flex-start; margin-top:1rem;">
+          <button id="saveMenuBtn" class="btn-secondary">Uložit jídelníček (prohlížeč)</button>
+          <button id="resetMenuBtn" class="btn-ghost">Obnovit výchozí</button>
+        </div>
+      </section>
+
+      <!-- OBJEDNÁVKA -->
+      <section class="card">
+        <h2>Objednávkový formulář</h2>
+
+        <form id="orderForm">
+          <table class="order-table">
+            <thead>
+              <tr>
+                <th>Den</th>
+                <th>Počet jídel</th>
+                <th>Typ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Pondělí</td>
+                <td><input type="number" min="0" value="0" name="mon_count"></td>
+                <td>
+                  <select name="mon_type">
+                    <option value="teplé">Teplé</option>
+                    <option value="studené">Studené</option>
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Úterý</td>
+                <td><input type="number" min="0" value="0" name="tue_count"></td>
+                <td>
+                  <select name="tue_type">
+                    <option value="teplé">Teplé</option>
+                    <option value="studené">Studené</option>
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Středa</td>
+                <td><input type="number" min="0" value="0" name="wed_count"></td>
+                <td>
+                  <select name="wed_type">
+                    <option value="teplé">Teplé</option>
+                    <option value="studené">Studené</option>
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Čtvrtek</td>
+                <td><input type="number" min="0" value="0" name="thu_count"></td>
+                <td>
+                  <select name="thu_type">
+                    <option value="teplé">Teplé</option>
+                    <option value="studené">Studené</option>
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Pátek</td>
+                <td><input type="number" min="0" value="0" name="fri_count"></td>
+                <td>
+                  <select name="fri_type">
+                    <option value="teplé">Teplé</option>
+                    <option value="studené">Studené</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="order-footer">
+            <div class="field">
+              <label>Adresa dodání</label>
+              <textarea name="address" rows="2" required></textarea>
+            </div>
+
+            <div class="field">
+              <label>Jméno objednávajícího</label>
+              <input type="text" name="name" required>
+            </div>
+
+            <div class="field">
+              <label>Kontakt (telefon / e‑mail)</label>
+              <input type="text" name="contact" required>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="reset" class="btn-secondary">Vymazat</button>
+            <button type="submit" class="btn-primary">Odeslat objednávku</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Výchozí jídelníček ----------
+    const defaultMenu = [
+      { key: "pondeli", label: "Pondělí", polevka: "Česneková polévka", hlavni: "Kuřecí řízek, bramborová kaše" },
+      { key: "utery",   label: "Úterý",   polevka: "Hovězí vývar",      hlavni: "Svíčková na smetaně, houskový knedlík" },
+      { key: "streda",  label: "Středa",  polevka: "Rajská polévka",    hlavni: "Špagety Bolognese, sýr" },
+      { key: "ctvrtek", label: "Čtvrtek", polevka: "Zeleninová polévka",hlavni: "Pečené kuře, rýže" },
+      { key: "patek",   label: "Pátek",   polevka: "Hrášková polévka",  hlavni: "Ryba na másle, brambory" }
+    ];
+
+    let menuData = [];
+    let editMode = false;
+    let dragSrcIndex = null;
+
+    // ---------- Dark mode ----------
+    const darkToggle = document.getElementById("darkToggle");
+    const darkIcon = document.getElementById("darkIcon");
+    const darkLabel = document.getElementById("darkLabel");
+
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.body.classList.add("dark");
+        darkIcon.textContent = "☀️";
+        darkLabel.textContent = "Light mode";
+      } else {
+        document.body.classList.remove("dark");
+        darkIcon.textContent = "🌙";
+        darkLabel.textContent = "Dark mode";
+      }
+    }
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    applyTheme(savedTheme);
+
+    darkToggle.addEventListener("click", () => {
+      const newTheme = document.body.classList.contains("dark") ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      applyTheme(newTheme);
+    });
+
+    // ---------- Načtení / uložení jídelníčku ----------
+    function loadMenu() {
+      const stored = localStorage.getItem("menuData");
+      if (stored) {
+        try {
+          menuData = JSON.parse(stored);
+          return;
+        } catch {}
+      }
+      menuData = JSON.parse(JSON.stringify(defaultMenu));
+    }
+
+    function saveMenu() {
+      localStorage.setItem("menuData", JSON.stringify(menuData));
+      alert("Jídelníček uložen v tomto prohlížeči.");
+    }
+
+    function resetMenu() {
+      if (!confirm("Opravdu obnovit výchozí jídelníček?")) return;
+      menuData = JSON.parse(JSON.stringify(defaultMenu));
+      localStorage.removeItem("menuData");
+      renderMenu();
+    }
+
+    document.getElementById("saveMenuBtn").addEventListener("click", saveMenu);
+    document.getElementById("resetMenuBtn").addEventListener("click", resetMenu);
+
+    // ---------- Render jídelníčku ----------
+    function renderMenu() {
+      const tbody = document.querySelector("#menuTable tbody");
+      tbody.innerHTML = "";
+
+      menuData.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.dataset.index = index;
+
+        if (editMode) {
+          tr.classList.add("draggable-row");
+          tr.draggable = true;
+        }
+
+        tr.innerHTML = editMode
+          ? `
+            <td class="menu-day">${item.label}</td>
+            <td><input value="${item.polevka}" data-field="polevka" data-index="${index}"></td>
+            <td><input value="${item.hlavni}" data-field="hlavni" data-index="${index}"></td>
+          `
+          : `
+            <td class="menu-day">${item.label}</td>
+            <td>${item.polevka}</td>
+            <td>${item.hlavni}</td>
+          `;
+
+        if (editMode) {
+          tr.addEventListener("dragstart", handleDragStart);
+          tr.addEventListener("dragover", handleDragOver);
+          tr.addEventListener("dragleave", handleDragLeave);
+          tr.addEventListener("drop", handleDrop);
+          tr.addEventListener("dragend", handleDragEnd);
+        }
+
+        tbody.appendChild(tr);
+      });
+
+      if (editMode) {
+        document.querySelectorAll("#menuTable input[data-field]").forEach(input => {
+          input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.dataset.index, 10);
+            const field = e.target.dataset.field;
+            menuData[idx][field] = e.target.value;
+          });
+        });
+      }
+    }
+
+    // ---------- Drag & drop ----------
+    function handleDragStart(e) {
+      dragSrcIndex = parseInt(this.dataset.index, 10);
+      this.style.opacity = "0.4";
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      this.classList.add("drag-over");
+    }
+
+    function handleDragLeave() {
+      this.classList.remove("drag-over");
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove("drag-over");
+      const targetIndex = parseInt(this.dataset.index, 10);
+      if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+
+      const moved = menuData.splice(dragSrcIndex, 1)[0];
+      menuData.splice(targetIndex, 0, moved);
+      renderMenu();
+    }
+
+    function handleDragEnd() {
+      this.style.opacity = "1";
+      dragSrcIndex = null;
+      document.querySelectorAll("tr.drag-over").forEach(tr => tr.classList.remove("drag-over"));
+    }
+
+    // ---------- Režim úprav ----------
+    const editToggle = document.getElementById("editToggle");
+    editToggle.addEventListener("click", () => {
+      editMode = !editMode;
+      editToggle.classList.toggle("active", editMode);
+      renderMenu();
+    });
+
+    // ---------- Objednávka ----------
+    const TARGET_EMAIL = "objednavky@mojefirma.cz";
+
+    document.getElementById("orderForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+
+      const days = [
+        { key: "mon", label: "Pondělí" },
+        { key: "tue", label: "Úterý" },
+        { key: "wed", label: "Středa" },
+        { key: "thu", label: "Čtvrtek" },
+        { key: "fri", label: "Pátek" },
+      ];
+
+      let lines = [];
+      let total = 0;
+
+      days.forEach((d) => {
+        const count = parseInt(form[d.key + "_count"].value || "0", 10);
+        const type = form[d.key + "_type"].value;
+        if (count > 0) {
+          lines.push(`${d.label}: ${count}× (${type})`);
+          total += count;
+        }
+      });
+
+      if (total === 0) {
+        alert("Zadej prosím alespoň jedno jídlo.");
+        return;
+      }
+
+      const address = form.address.value.trim();
+      const name = form.name.value.trim();
+      const contact = form.contact.value.trim();
+
+      if (!address || !name || !contact) {
+        alert("Vyplň prosím adresu, jméno a kontakt.");
+        return;
+      }
+
+      let body = "";
+      body += "Nová objednávka jídla:%0D%0A%0D%0A";
+      lines.forEach((line) => {
+        body += line + "%0D%0A";
+      });
+      body += "%0D%0ACelkem jídel: " + total + "%0D%0A%0D%0A";
+      body += "Adresa dodání:%0D%0A" + encodeURIComponent(address) + "%0D%0A%0D%0A";
+      body += "Objednávající: " + encodeURIComponent(name) + "%0D%0A";
+      body += "Kontakt: " + encodeURIComponent(contact) + "%0D%0A";
+
+      const subject = encodeURIComponent("Objednávka jídla");
+      const mailtoLink = `mailto:${TARGET_EMAIL}?subject=${subject}&body=${body}`;
+
+      window.location.href = mailtoLink;
+    });
+
+    // ---------- Start ----------
+    loadMenu();
+    renderMenu();
+  </script>
+</body>
+</html>
